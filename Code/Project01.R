@@ -1,7 +1,38 @@
 covid <- read.csv("covid.csv")
 glimpse(covid)
 
-colorBlindness::cvdPlot(plot)
+case_loads_1 <- covid %>%
+  mutate(vax_num = case_when(
+    str_detect(vaxcount, "One") ~ 1,
+    str_detect(vaxcount, "Two") ~ 2,
+    str_detect(vaxcount, "Three") ~ 3,
+    str_detect(vaxcount, regex("Four.", dotall = TRUE)) ~ 3,
+    str_detect(vaxcount, "Refused") ~ NA_real_,
+    str_detect(vaxcount, "") ~ 0)) %>%
+  filter(party != "Don't Know",
+         party != "Refused",
+         party != "Or what?") %>%
+  select(party, cases_avg_per_100k, vax_num) %>%
+  group_by(party, vax_num) %>%
+  add_count(party) %>%
+  summarize(mean_cases_avg_per_100k = mean(cases_avg_per_100k, na.rm = TRUE))
+
+case_loads_2 <- covid %>%
+  mutate(vax_num = case_when(
+    str_detect(vaxcount, "One") ~ 1,
+    str_detect(vaxcount, "Two") ~ 2,
+    str_detect(vaxcount, "Three") ~ 3,
+    str_detect(vaxcount, regex("Four.", dotall = TRUE)) ~ 3,
+    str_detect(vaxcount, "Refused") ~ NA_real_,
+    str_detect(vaxcount, "") ~ 0)) %>%
+  filter(party != "Don't Know",
+         party != "Refused",
+         party != "Or what?",
+         recage2 != "DK/RF") %>%
+  select(party, cases_avg_per_100k, recage2, vax_num) %>%
+  group_by(party, recage2, vax_num) %>%
+  add_count(party) %>%
+  summarize(mean_cases_avg_per_100k = mean(cases_avg_per_100k, na.rm = TRUE))
 
 covid %>%
   mutate(vax_num = case_when(
@@ -35,6 +66,7 @@ covid %>%
   labs(title = "Covid Vaccination Rates and Covid Case Rates\n across Party Affiliation and Age Groups",
        x = "Number of Vaccinations",
        y = "Percentage, in %",
+       caption = "Henry J. Kaiser Family Foundation. (2022). Kaiser Family Foundation Poll: February 2022 COVID-19 Vaccine Monitor (Version 2) [Dataset].\nCornell University, Ithaca, NY: Roper Center for Public Opinion Research. doi:10.25940/ROPER-31119366",
        fill = "Party Affiliation",
        color = "Covid Cases",
        alpha = "Age Groups") +
@@ -45,36 +77,3 @@ covid %>%
         strip.text.x = element_text(size = 9),
         plot.title = element_text(hjust = 0.5),
         legend.position = "bottom")
-
-case_loads_1 <- covid %>%
-  mutate(vax_num = case_when(
-    str_detect(vaxcount, "One") ~ 1,
-    str_detect(vaxcount, "Two") ~ 2,
-    str_detect(vaxcount, "Three") ~ 3,
-    str_detect(vaxcount, regex("Four.", dotall = TRUE)) ~ 3,
-    str_detect(vaxcount, "Refused") ~ NA_real_,
-    str_detect(vaxcount, "") ~ 0)) %>%
-  filter(party != "Don't Know",
-         party != "Refused",
-         party != "Or what?") %>%
-  select(party, cases_avg_per_100k, vax_num) %>%
-  group_by(party, vax_num) %>%
-  add_count(party) %>%
-  summarize(mean_cases_avg_per_100k = mean(cases_avg_per_100k, na.rm = TRUE))
-
-case_loads_2 <- covid %>%
-  mutate(vax_num = case_when(
-    str_detect(vaxcount, "One") ~ 1,
-    str_detect(vaxcount, "Two") ~ 2,
-    str_detect(vaxcount, "Three") ~ 3,
-    str_detect(vaxcount, regex("Four.", dotall = TRUE)) ~ 3,
-    str_detect(vaxcount, "Refused") ~ NA_real_,
-    str_detect(vaxcount, "") ~ 0)) %>%
-  filter(party != "Don't Know",
-         party != "Refused",
-         party != "Or what?",
-         recage2 != "DK/RF") %>%
-  select(party, cases_avg_per_100k, recage2, vax_num) %>%
-  group_by(party, recage2, vax_num) %>%
-  add_count(party) %>%
-  summarize(mean_cases_avg_per_100k = mean(cases_avg_per_100k, na.rm = TRUE))
