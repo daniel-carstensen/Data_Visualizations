@@ -1,3 +1,3 @@
 # QSS17: Data Visualization
 
-Code from my data visualizations
+Code and graphs of my data visualizations which I made in QSS17.
